@@ -1,42 +1,245 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dongers & Dragons</title>
   <style>
     body {
-      background-color: #0b0b0b;
-      color: #f5f5f5;
-      font-family: Georgia, serif;
+      margin: 0;
+      background:
+        radial-gradient(circle at top, rgba(120, 20, 20, 0.25), transparent 30%),
+        linear-gradient(180deg, #050505 0%, #0d0d0f 100%);
+      color: #f5f1e8;
+      font-family: Georgia, "Times New Roman", serif;
       text-align: center;
     }
-    h1 {
-      color: gold;
-      font-size: 48px;
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 36px 20px 60px;
     }
+
+    .hero {
+      padding: 24px 16px 12px;
+    }
+
+    .kicker {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 8px 14px;
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      border-radius: 999px;
+      color: #e8c76a;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: rgba(212, 175, 55, 0.08);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(44px, 7vw, 88px);
+      line-height: 1;
+      color: #f2c94c;
+      text-shadow: 0 0 18px rgba(242, 201, 76, 0.18);
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 18px auto 0;
+      font-size: 20px;
+      line-height: 1.6;
+      color: #d9d3c6;
+    }
+
+    .top-icons {
+      font-size: 46px;
+      margin-bottom: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-top: 36px;
+    }
+
+    @media (min-width: 900px) {
+      .grid {
+        grid-template-columns: 0.9fr 1.1fr;
+      }
+    }
+
     .card {
-      background: #1a1a1a;
-      padding: 20px;
-      margin: 20px auto;
-      width: 60%;
-      border-radius: 10px;
-      border: 1px solid gold;
+      background: linear-gradient(180deg, rgba(22,22,26,0.95), rgba(15,15,17,0.98));
+      border: 1px solid rgba(212, 175, 55, 0.8);
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-size: 24px;
+      color: #f6e7b2;
+    }
+
+    .draft-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .draft-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      text-align: left;
+    }
+
+    .pick-num {
+      min-width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(212, 175, 55, 0.14);
+      color: #f2c94c;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .pick-name {
+      flex: 1;
+      font-size: 22px;
+      color: #f7f3ea;
+    }
+
+    .rules {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .rule {
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      text-align: left;
+    }
+
+    .rule strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #f2c94c;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    .coming-soon {
+      margin-top: 30px;
+      padding: 18px 20px;
+      border-radius: 16px;
+      background: rgba(139, 0, 0, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      color: #e8dfcf;
+      line-height: 1.6;
+    }
+
+    .footer {
+      margin-top: 32px;
+      font-size: 14px;
+      color: #a9a298;
+    }
+
+    .highlight {
+      color: #f2c94c;
+      font-weight: bold;
     }
   </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="top-icons">🐉 ⚾</div>
+      <div class="kicker">Fantasy-lite dragon mode</div>
+      <h1>Dongers & Dragons</h1>
+      <p class="subtitle">
+        A heroic league of dingers, questionable strategy, and one sacred truth:
+        <span class="highlight">spend your dongs wisely.</span>
+      </p>
+    </div>
 
-<h1>🐉 Dongers & Dragons ⚾</h1>
+    <div class="grid">
+      <div class="card">
+        <h2>League Rules</h2>
+        <div class="rules">
+          <div class="rule">
+            <strong>10 Hitters</strong>
+            Home runs are the main stat that matters.
+          </div>
+          <div class="rule">
+            <strong>1 Pitcher</strong>
+            A no-hitter or perfect game earns eternal glory and, more importantly, pizza.
+          </div>
+          <div class="rule">
+            <strong>169 Dong Budget</strong>
+            Each player's prior homer total is their cost.
+          </div>
+          <div class="rule">
+            <strong>Snake Draft</strong>
+            The order reverses every round. Chaos is part of the format.
+          </div>
+          <div class="rule">
+            <strong>$20 Entry</strong>
+            High stakes. Serious business. Completely normal league.
+          </div>
+        </div>
 
-<div class="card">
-  <h2>Draft Order</h2>
-  <p>Joe</p>
-  <p>Mayrose</p>
-  <p>Lily</p>
-  <p>Spencer</p>
-  <p>Colin</p>
-  <p>Dylan</p>
-</div>
+        <div class="coming-soon">
+          <strong>Coming next:</strong> live draft picks, roster pages, standings, team HR totals,
+          and pitcher no-hitter / perfect game tracking from your Google Sheet.
+        </div>
+      </div>
 
+      <div class="card">
+        <h2>Draft Order</h2>
+        <div class="draft-list">
+          <div class="draft-item"><span class="pick-num">1</span><span class="pick-name">Joe</span></div>
+          <div class="draft-item"><span class="pick-num">2</span><span class="pick-name">Mayrose</span></div>
+          <div class="draft-item"><span class="pick-num">3</span><span class="pick-name">Lily</span></div>
+          <div class="draft-item"><span class="pick-num">4</span><span class="pick-name">Spencer</span></div>
+          <div class="draft-item"><span class="pick-num">5</span><span class="pick-name">Colin</span></div>
+          <div class="draft-item"><span class="pick-num">6</span><span class="pick-name">Dylan</span></div>
+          <div class="draft-item"><span class="pick-num">7</span><span class="pick-name">Pete</span></div>
+          <div class="draft-item"><span class="pick-num">8</span><span class="pick-name">Ian</span></div>
+          <div class="draft-item"><span class="pick-num">9</span><span class="pick-name">Rachel</span></div>
+          <div class="draft-item"><span class="pick-num">10</span><span class="pick-name">Larry</span></div>
+          <div class="draft-item"><span class="pick-num">11</span><span class="pick-name">Brett</span></div>
+          <div class="draft-item"><span class="pick-num">12</span><span class="pick-name">Derek Hanson</span></div>
+          <div class="draft-item"><span class="pick-num">13</span><span class="pick-name">Bort</span></div>
+          <div class="draft-item"><span class="pick-num">14</span><span class="pick-name">Derek Evers</span></div>
+          <div class="draft-item"><span class="pick-num">15</span><span class="pick-name">Dana</span></div>
+          <div class="draft-item"><span class="pick-num">16</span><span class="pick-name">Adam</span></div>
+          <div class="draft-item"><span class="pick-num">17</span><span class="pick-name">D.O.</span></div>
+          <div class="draft-item"><span class="pick-num">18</span><span class="pick-name">McNelis</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Dongers & Dragons League Headquarters
+    </div>
+  </div>
 </body>
 </html>
