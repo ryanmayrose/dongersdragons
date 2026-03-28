@@ -457,8 +457,13 @@
       statusArea.appendChild(div);
     }
 
-    function normalizeName(name) {
-      return String(name || "").replace(/\\s+/g, " ").trim();
+function normalizeName(name) {
+  return String(name || "")
+    .replace(/\uFEFF/g, "")
+    .replace(/^\ufeff/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
     }
 
     function parseCsv(text) {
@@ -619,15 +624,22 @@
     }
 
     function rowToTeam(row) {
-      const hitters = HITTER_COLUMNS.map(col => normalizeName(row[col])).filter(Boolean);
+  const get = (obj, key) => {
+    const actualKey = Object.keys(obj).find(
+      k => normalizeName(k).toLowerCase() === key.toLowerCase()
+    );
+    return actualKey ? normalizeName(obj[actualKey]) : "";
+  };
 
-      return {
-        teamName: normalizeName(row.teamName),
-        owner: normalizeName(row.owner),
-        pitcherName: normalizeName(row.pitcher),
-        hitters
-      };
-    }
+  const hitters = HITTER_COLUMNS.map(col => get(row, col)).filter(Boolean);
+
+  return {
+    teamName: get(row, "teamName"),
+    owner: get(row, "owner"),
+    pitcherName: get(row, "pitcher"),
+    hitters
+  };
+}
 
     function renderStandings(teams) {
       standingsList.innerHTML = "";
