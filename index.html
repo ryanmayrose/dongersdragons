@@ -365,6 +365,69 @@
     a {
       color: #f2d57e;
     }
+    .tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin: 10px 0 26px;
+}
+
+.tab-btn {
+  cursor: pointer;
+  border: 1px solid rgba(242, 201, 76, 0.45);
+  background: rgba(242, 201, 76, 0.08);
+  color: #f2deb0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+.tab-btn.active {
+  background: var(--gold);
+  color: #111;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.rules-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.rule {
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.rule strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--gold);
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+@media (min-width: 980px) {
+  .home-grid {
+    grid-template-columns: 0.95fr 1.05fr;
+  }
+}
   </style>
 </head>
 <body>
@@ -392,36 +455,75 @@
 
     <div id="statusArea"></div>
 
-    <div class="top-grid">
-      <div class="card">
-        <h2>League Snapshot</h2>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="stat-label">Teams</div>
-            <div class="stat-value" id="statTeams">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">League HR</div>
-            <div class="stat-value" id="statLeagueHr">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Rostered Hitters</div>
-            <div class="stat-value" id="statHitters">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">First Place</div>
-            <div class="stat-value" id="statLeader" style="font-size:20px;">—</div>
-          </div>
-        </div>
-      </div>
+    <div class="tabs">
+  <button class="tab-btn active" data-tab="home">Home</button>
+  <button class="tab-btn" data-tab="standings">Standings</button>
+  <button class="tab-btn" data-tab="rosters">Rosters</button>
+</div>
 
-      <div class="card">
-        <h2>Standings</h2>
-        <div id="standingsList"></div>
+<div id="tab-home" class="tab-panel active">
+  <div class="home-grid">
+    <div class="card">
+      <h2>League Snapshot</h2>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Teams</div>
+          <div class="stat-value" id="statTeams">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">League HR</div>
+          <div class="stat-value" id="statLeagueHr">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Rostered Hitters</div>
+          <div class="stat-value" id="statHitters">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">First Place</div>
+          <div class="stat-value" id="statLeader" style="font-size:20px;">—</div>
+        </div>
       </div>
     </div>
 
-    <div class="teams-grid" id="teamCards"></div>
+    <div class="card">
+      <h2>About the League</h2>
+      <div class="muted">
+        Dongers & Dragons is a fantasy-lite baseball league built around one sacred truth:
+        spend your dongs wisely.
+      </div>
+
+      <div class="rules-list">
+        <div class="rule">
+          <strong>8 Hitters</strong>
+          Team scoring is based on 2026 MLB home runs by your rostered hitters.
+        </div>
+        <div class="rule">
+          <strong>1 Pitcher</strong>
+          Pitchers are tracked separately for no-hitter and perfect-game glory.
+        </div>
+        <div class="rule">
+          <strong>150 Dong Budget</strong>
+          Draft wisely. Every dong spent matters.
+        </div>
+        <div class="rule">
+          <strong>Live Scoring</strong>
+          Rosters come from your Google Sheet. HR totals come from live MLB stats.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-standings" class="tab-panel">
+  <div class="card">
+    <h2>Standings</h2>
+    <div id="standingsList"></div>
+  </div>
+</div>
+
+<div id="tab-rosters" class="tab-panel">
+  <div class="teams-grid" id="teamCards"></div>
+</div>
 
     <div class="footer-note">
       This site uses your Google Sheet only for rosters. Scoring comes from live MLB player stats lookups by name. Pitcher no-hitter and perfect game flags are inferred from game logs, so they should be treated as a fun bonus tracker rather than a formal official stat source.
@@ -831,7 +933,20 @@
       refreshBtn.textContent = "Refresh now";
     }
   }
+const tabButtons = document.querySelectorAll(".tab-btn");
+const tabPanels = document.querySelectorAll(".tab-panel");
 
+tabButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+
+    tabButtons.forEach(b => b.classList.remove("active"));
+    tabPanels.forEach(p => p.classList.remove("active"));
+
+    btn.classList.add("active");
+    document.getElementById(`tab-${tab}`).classList.add("active");
+  });
+});
   refreshBtn.addEventListener("click", loadLeague);
   loadLeague();
   setInterval(loadLeague, CONFIG.refreshMs);
