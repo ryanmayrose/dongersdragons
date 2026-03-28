@@ -5,166 +5,365 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dongers & Dragons</title>
   <style>
+    :root {
+      --bg: #060606;
+      --panel: rgba(20, 20, 24, 0.96);
+      --panel2: rgba(28, 28, 34, 0.98);
+      --gold: #f2c94c;
+      --gold-soft: rgba(242, 201, 76, 0.2);
+      --text: #f5f1e8;
+      --muted: #c9c3b8;
+      --line: rgba(255,255,255,0.08);
+      --red: #8f1d1d;
+      --green: #1f6f43;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       background:
-        radial-gradient(circle at top, rgba(120, 20, 20, 0.25), transparent 30%),
-        linear-gradient(180deg, #050505 0%, #0d0d0f 100%);
-      color: #f5f1e8;
+        radial-gradient(circle at top, rgba(140, 30, 30, 0.25), transparent 30%),
+        linear-gradient(180deg, #050505 0%, #0c0d10 100%);
+      color: var(--text);
       font-family: Georgia, "Times New Roman", serif;
-      text-align: center;
     }
 
     .wrap {
-      max-width: 1200px;
+      max-width: 1320px;
       margin: 0 auto;
-      padding: 36px 20px 60px;
+      padding: 28px 18px 60px;
     }
 
     .hero {
-      padding: 24px 16px 12px;
+      text-align: center;
+      padding: 18px 10px 10px;
     }
 
     .kicker {
       display: inline-block;
-      margin-bottom: 16px;
       padding: 8px 14px;
-      border: 1px solid rgba(212, 175, 55, 0.45);
+      border: 1px solid rgba(242, 201, 76, 0.45);
       border-radius: 999px;
-      color: #e8c76a;
+      background: rgba(242, 201, 76, 0.08);
+      color: #f5db84;
       font-size: 12px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      background: rgba(212, 175, 55, 0.08);
+      margin-bottom: 16px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(44px, 7vw, 88px);
+      font-size: clamp(44px, 7vw, 84px);
       line-height: 1;
-      color: #f2c94c;
-      text-shadow: 0 0 18px rgba(242, 201, 76, 0.18);
+      color: var(--gold);
+      text-shadow: 0 0 18px rgba(242, 201, 76, 0.14);
     }
 
     .subtitle {
-      max-width: 760px;
+      max-width: 820px;
       margin: 18px auto 0;
+      color: var(--muted);
       font-size: 20px;
       line-height: 1.6;
-      color: #d9d3c6;
+      text-align: center;
     }
 
     .top-icons {
-      font-size: 46px;
-      margin-bottom: 10px;
+      font-size: 44px;
+      margin-bottom: 8px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 28px;
+      margin-bottom: 22px;
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .pill {
+      border: 1px solid rgba(242, 201, 76, 0.28);
+      background: rgba(242, 201, 76, 0.08);
+      color: #f2deb0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 1px solid rgba(242, 201, 76, 0.55);
+      background: var(--gold);
+      color: #111;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: bold;
+      font-family: inherit;
     }
 
     .grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 24px;
-      margin-top: 36px;
+      gap: 22px;
     }
 
-    @media (min-width: 900px) {
-      .grid {
-        grid-template-columns: 0.9fr 1.1fr;
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+      margin-bottom: 24px;
+    }
+
+    @media (min-width: 980px) {
+      .top-grid {
+        grid-template-columns: 0.85fr 1.15fr;
       }
     }
 
     .card {
-      background: linear-gradient(180deg, rgba(22,22,26,0.95), rgba(15,15,17,0.98));
-      border: 1px solid rgba(212, 175, 55, 0.8);
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      border: 1px solid rgba(242, 201, 76, 0.6);
       border-radius: 22px;
-      padding: 28px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      padding: 24px;
+      box-shadow: 0 12px 42px rgba(0,0,0,0.35);
     }
 
-    h2 {
+    .card h2 {
       margin-top: 0;
-      margin-bottom: 18px;
-      font-size: 24px;
-      color: #f6e7b2;
+      margin-bottom: 16px;
+      font-size: 28px;
+      color: #f7e7b0;
     }
 
-    .draft-list {
+    .muted {
+      color: var(--muted);
+    }
+
+    .stat-grid {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
-      margin-top: 8px;
     }
 
-    .draft-item {
+    @media (min-width: 700px) {
+      .stat-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .stat-label {
+      color: #c8b88d;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      margin-top: 6px;
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .standing-row, .player-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
       padding: 14px 16px;
       border-radius: 14px;
       background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      text-align: left;
+      border: 1px solid var(--line);
+      margin-bottom: 10px;
     }
 
-    .pick-num {
-      min-width: 42px;
-      height: 42px;
+    .rank {
+      width: 40px;
+      height: 40px;
       border-radius: 999px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(212, 175, 55, 0.14);
-      color: #f2c94c;
+      background: rgba(242, 201, 76, 0.15);
+      color: var(--gold);
       font-weight: bold;
-      font-size: 16px;
+      flex: 0 0 auto;
     }
 
-    .pick-name {
-      flex: 1;
+    .standing-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .team-name {
       font-size: 22px;
-      color: #f7f3ea;
+      color: #fff7df;
     }
 
-    .rules {
+    .owner-name {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .hr-box {
+      text-align: right;
+      min-width: 74px;
+    }
+
+    .hr-label {
+      font-size: 11px;
+      color: #9e988b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hr-value {
+      font-size: 30px;
+      color: var(--gold);
+      font-weight: bold;
+      line-height: 1;
+      margin-top: 4px;
+    }
+
+    .teams-grid {
       display: grid;
-      gap: 14px;
-      margin-top: 14px;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 24px;
     }
 
-    .rule {
-      padding: 16px;
-      border-radius: 14px;
+    @media (min-width: 1000px) {
+      .teams-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .team-card {
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      border: 1px solid rgba(242, 201, 76, 0.45);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 12px 42px rgba(0,0,0,0.3);
+    }
+
+    .team-top {
+      height: 5px;
+      background: linear-gradient(90deg, #f2c94c, #b33f3f, #f2c94c);
+    }
+
+    .team-inner {
+      padding: 22px;
+    }
+
+    .team-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .badge {
+      background: rgba(242, 201, 76, 0.14);
+      border: 1px solid rgba(242, 201, 76, 0.35);
+      color: #f7deb0;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .section-title {
+      color: #f0d98c;
+      font-size: 14px;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+
+    .pitcher-box {
+      border: 1px solid var(--line);
       background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      text-align: left;
-    }
-
-    .rule strong {
-      display: block;
-      margin-bottom: 6px;
-      color: #f2c94c;
-      font-size: 16px;
-      letter-spacing: 0.3px;
-    }
-
-    .coming-soon {
-      margin-top: 30px;
-      padding: 18px 20px;
       border-radius: 16px;
-      background: rgba(139, 0, 0, 0.12);
-      border: 1px solid rgba(212, 175, 55, 0.28);
-      color: #e8dfcf;
+      padding: 14px;
+      margin-top: 8px;
+    }
+
+    .pitcher-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .mini-badge {
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: #111318;
+      color: #ece6d8;
+    }
+
+    .ok { color: #cfeecf; border-color: rgba(68, 162, 91, 0.45); }
+    .warn { color: #ffe2a8; border-color: rgba(242, 201, 76, 0.45); }
+
+    .error, .loading {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid;
+    }
+
+    .error {
+      background: rgba(143, 29, 29, 0.15);
+      border-color: rgba(143, 29, 29, 0.55);
+      color: #ffd3d3;
+    }
+
+    .loading {
+      background: rgba(242, 201, 76, 0.08);
+      border-color: rgba(242, 201, 76, 0.3);
+      color: #f5e1a6;
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      color: #aba599;
+      font-size: 14px;
       line-height: 1.6;
     }
 
-    .footer {
-      margin-top: 32px;
-      font-size: 14px;
-      color: #a9a298;
+    .small {
+      font-size: 13px;
+      color: #b8b2a7;
     }
 
-    .highlight {
-      color: #f2c94c;
-      font-weight: bold;
+    a {
+      color: #f2d57e;
     }
   </style>
 </head>
@@ -174,72 +373,439 @@
       <div class="top-icons">🐉 ⚾</div>
       <div class="kicker">Fantasy-lite dragon mode</div>
       <h1>Dongers & Dragons</h1>
-      <p class="subtitle">
-        A heroic league of dingers, questionable strategy, and one sacred truth:
-        <span class="highlight">spend your dongs wisely.</span>
-      </p>
+      <div class="subtitle">
+        Live league standings powered by your <strong>WebsiteData</strong> tab and 2026 MLB player stats.
+      </div>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <h2>League Rules</h2>
-        <div class="rules">
-          <div class="rule">
-            <strong>10 Hitters</strong>
-            Home runs are the main stat that matters.
-          </div>
-          <div class="rule">
-            <strong>1 Pitcher</strong>
-            A no-hitter or perfect game earns eternal glory and, more importantly, pizza.
-          </div>
-          <div class="rule">
-            <strong>169 Dong Budget</strong>
-            Each player's prior homer total is their cost.
-          </div>
-          <div class="rule">
-            <strong>Snake Draft</strong>
-            The order reverses every round. Chaos is part of the format.
-          </div>
-          <div class="rule">
-            <strong>$20 Entry</strong>
-            High stakes. Serious business. Completely normal league.
-          </div>
-        </div>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="pill">8 hitters</div>
+        <div class="pill">150 dong budget</div>
+        <div class="pill">2026 season</div>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn" id="refreshBtn">Refresh now</button>
+        <div class="pill" id="lastUpdated">Waiting for first sync…</div>
+      </div>
+    </div>
 
-        <div class="coming-soon">
-          <strong>Coming next:</strong> live draft picks, roster pages, standings, team HR totals,
-          and pitcher no-hitter / perfect game tracking from your Google Sheet.
+    <div id="statusArea"></div>
+
+    <div class="top-grid">
+      <div class="card">
+        <h2>League Snapshot</h2>
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="stat-label">Teams</div>
+            <div class="stat-value" id="statTeams">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">League HR</div>
+            <div class="stat-value" id="statLeagueHr">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Rostered Hitters</div>
+            <div class="stat-value" id="statHitters">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">First Place</div>
+            <div class="stat-value" id="statLeader" style="font-size:20px;">—</div>
+          </div>
         </div>
       </div>
 
       <div class="card">
-        <h2>Draft Order</h2>
-        <div class="draft-list">
-          <div class="draft-item"><span class="pick-num">1</span><span class="pick-name">Joe</span></div>
-          <div class="draft-item"><span class="pick-num">2</span><span class="pick-name">Mayrose</span></div>
-          <div class="draft-item"><span class="pick-num">3</span><span class="pick-name">Lily</span></div>
-          <div class="draft-item"><span class="pick-num">4</span><span class="pick-name">Spencer</span></div>
-          <div class="draft-item"><span class="pick-num">5</span><span class="pick-name">Colin</span></div>
-          <div class="draft-item"><span class="pick-num">6</span><span class="pick-name">Dylan</span></div>
-          <div class="draft-item"><span class="pick-num">7</span><span class="pick-name">Pete</span></div>
-          <div class="draft-item"><span class="pick-num">8</span><span class="pick-name">Ian</span></div>
-          <div class="draft-item"><span class="pick-num">9</span><span class="pick-name">Rachel</span></div>
-          <div class="draft-item"><span class="pick-num">10</span><span class="pick-name">Larry</span></div>
-          <div class="draft-item"><span class="pick-num">11</span><span class="pick-name">Brett</span></div>
-          <div class="draft-item"><span class="pick-num">12</span><span class="pick-name">Derek Hanson</span></div>
-          <div class="draft-item"><span class="pick-num">13</span><span class="pick-name">Bort</span></div>
-          <div class="draft-item"><span class="pick-num">14</span><span class="pick-name">Derek Evers</span></div>
-          <div class="draft-item"><span class="pick-num">15</span><span class="pick-name">Dana</span></div>
-          <div class="draft-item"><span class="pick-num">16</span><span class="pick-name">Adam</span></div>
-          <div class="draft-item"><span class="pick-num">17</span><span class="pick-name">D.O.</span></div>
-          <div class="draft-item"><span class="pick-num">18</span><span class="pick-name">McNelis</span></div>
-        </div>
+        <h2>Standings</h2>
+        <div id="standingsList"></div>
       </div>
     </div>
 
-    <div class="footer">
-      Dongers & Dragons League Headquarters
+    <div class="teams-grid" id="teamCards"></div>
+
+    <div class="footer-note">
+      This site uses your Google Sheet only for rosters. Scoring comes from live MLB player stats lookups by name. Pitcher no-hitter and perfect game flags are inferred from game logs, so they should be treated as a fun bonus tracker rather than a formal official stat source.
     </div>
   </div>
+
+  <script>
+    const CONFIG = {
+      season: 2026,
+      refreshMs: 1000 * 60 * 10,
+      sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbtCDtQvXSn0d9uYubjC7_PWg-mBzZrmwwTPQ1vXlQT6vWz5HQrV3M6lfgqD_aYwFnHBxkITpINQOl/pub?gid=1875360398&single=true&output=csv"
+    };
+
+    const HITTER_COLUMNS = ["hitter1","hitter2","hitter3","hitter4","hitter5","hitter6","hitter7","hitter8"];
+
+    const statusArea = document.getElementById("statusArea");
+    const standingsList = document.getElementById("standingsList");
+    const teamCards = document.getElementById("teamCards");
+
+    const statTeams = document.getElementById("statTeams");
+    const statLeagueHr = document.getElementById("statLeagueHr");
+    const statHitters = document.getElementById("statHitters");
+    const statLeader = document.getElementById("statLeader");
+    const lastUpdated = document.getElementById("lastUpdated");
+    const refreshBtn = document.getElementById("refreshBtn");
+
+    function setStatus(type, text) {
+      statusArea.innerHTML = "";
+      if (!text) return;
+      const div = document.createElement("div");
+      div.className = type;
+      div.textContent = text;
+      statusArea.appendChild(div);
+    }
+
+    function normalizeName(name) {
+      return String(name || "").replace(/\\s+/g, " ").trim();
+    }
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [];
+      let value = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            value += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === "," && !inQuotes) {
+          row.push(value);
+          value = "";
+        } else if ((char === "\\n" || char === "\\r") && !inQuotes) {
+          if (char === "\\r" && next === "\\n") i++;
+          row.push(value);
+          rows.push(row);
+          row = [];
+          value = "";
+        } else {
+          value += char;
+        }
+      }
+
+      if (value.length > 0 || row.length > 0) {
+        row.push(value);
+        rows.push(row);
+      }
+
+      const headers = (rows.shift() || []).map(h => normalizeName(h));
+      return rows
+        .filter(r => r.some(cell => normalizeName(cell) !== ""))
+        .map(r => {
+          const obj = {};
+          headers.forEach((h, idx) => obj[h] = normalizeName(r[idx] || ""));
+          return obj;
+        });
+    }
+
+    async function fetchJson(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Request failed: " + res.status);
+      return res.json();
+    }
+
+    async function searchPlayer(name) {
+      const url = `https://statsapi.mlb.com/api/v1/people/search?names=${encodeURIComponent(name)}`;
+      const data = await fetchJson(url);
+      const people = data.people || [];
+      if (!people.length) return null;
+
+      const exact = people.find(
+        p => normalizeName(p.fullName).toLowerCase() === normalizeName(name).toLowerCase()
+      );
+
+      return exact || people[0];
+    }
+
+    async function fetchPlayerSeasonStats(personId) {
+      const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=season&group=hitting,pitching&season=${CONFIG.season}`;
+      const data = await fetchJson(url);
+      const stats = data.stats || [];
+
+      const hitting =
+        stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "hitting")?.splits?.[0]?.stat || {};
+      const pitching =
+        stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "pitching")?.splits?.[0]?.stat || {};
+
+      return { hitting, pitching };
+    }
+
+    async function fetchPitcherAchievements(personId) {
+      const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=gameLog&group=pitching&season=${CONFIG.season}`;
+      const data = await fetchJson(url);
+      const games = data.stats?.[0]?.splits || [];
+
+      const notable = games.map(g => {
+        const stat = g.stat || {};
+        const hits = Number(stat.hits ?? 999);
+        const walks = Number(stat.baseOnBalls ?? 999);
+        const hbp = Number(stat.hitBatsmen ?? 999);
+        const ip = Number(String(stat.inningsPitched ?? "0").replace(/[^0-9.]/g, "")) || 0;
+        const battersFaced = Number(stat.battersFaced ?? 0);
+        const gs = Number(stat.gamesStarted ?? 0);
+        const label = `${g.date || ""}${g.opponent?.name ? " vs " + g.opponent.name : ""}`.trim();
+
+        const noHitter = gs >= 1 && ip >= 9 && hits === 0;
+        const perfectGame = noHitter && walks === 0 && hbp === 0 && battersFaced >= 27;
+
+        return { label, noHitter, perfectGame };
+      }).filter(g => g.noHitter || g.perfectGame);
+
+      return {
+        noHitters: notable.filter(g => g.noHitter),
+        perfectGames: notable.filter(g => g.perfectGame)
+      };
+    }
+
+    async function enrichHitter(name) {
+      if (!name) return null;
+
+      const person = await searchPlayer(name);
+      if (!person) {
+        return {
+          lookupName: name,
+          fullName: name,
+          hr: 0,
+          team: "",
+          note: "No MLB match found"
+        };
+      }
+
+      const season = await fetchPlayerSeasonStats(person.id);
+
+      return {
+        lookupName: name,
+        fullName: person.fullName,
+        hr: Number(season.hitting.homeRuns || 0),
+        team: person.currentTeam?.name || "",
+        note: normalizeName(person.fullName).toLowerCase() === normalizeName(name).toLowerCase()
+          ? ""
+          : `Matched from "${name}"`
+      };
+    }
+
+    async function enrichPitcher(name) {
+      if (!name) return null;
+
+      const person = await searchPlayer(name);
+      if (!person) {
+        return {
+          fullName: name,
+          team: "",
+          achievements: { noHitters: [], perfectGames: [] },
+          note: "No MLB match found"
+        };
+      }
+
+      const achievements = await fetchPitcherAchievements(person.id);
+
+      return {
+        fullName: person.fullName,
+        team: person.currentTeam?.name || "",
+        achievements,
+        note: normalizeName(person.fullName).toLowerCase() === normalizeName(name).toLowerCase()
+          ? ""
+          : `Matched from "${name}"`
+      };
+    }
+
+    function rowToTeam(row) {
+      const hitters = HITTER_COLUMNS.map(col => normalizeName(row[col])).filter(Boolean);
+
+      return {
+        teamName: normalizeName(row.teamName),
+        owner: normalizeName(row.owner),
+        pitcherName: normalizeName(row.pitcher),
+        hitters
+      };
+    }
+
+    function renderStandings(teams) {
+      standingsList.innerHTML = "";
+      teams.forEach((team, idx) => {
+        const row = document.createElement("div");
+        row.className = "standing-row";
+        row.innerHTML = `
+          <div class="standing-main">
+            <div class="rank">${idx + 1}</div>
+            <div>
+              <div class="team-name">${escapeHtml(team.teamName)}</div>
+              <div class="owner-name">Managed by ${escapeHtml(team.owner || "Unknown GM")}</div>
+            </div>
+          </div>
+          <div class="hr-box">
+            <div class="hr-label">Team HR</div>
+            <div class="hr-value">${team.totalHr}</div>
+          </div>
+        `;
+        standingsList.appendChild(row);
+      });
+    }
+
+    function renderTeamCards(teams) {
+      teamCards.innerHTML = "";
+      teams.forEach((team, idx) => {
+        const card = document.createElement("div");
+        card.className = "team-card";
+
+        const hittersHtml = team.players
+          .sort((a, b) => b.hr - a.hr)
+          .map(player => `
+            <div class="player-row">
+              <div>
+                <div style="font-size:18px;color:#fff7df;">${escapeHtml(player.fullName)}</div>
+                <div class="small">${escapeHtml(player.team || "Team TBD")}${player.note ? " • " + escapeHtml(player.note) : ""}</div>
+              </div>
+              <div class="hr-box">
+                <div class="hr-label">2026 HR</div>
+                <div class="hr-value">${player.hr}</div>
+              </div>
+            </div>
+          `).join("");
+
+        const pitcher = team.pitcher;
+        const noNoCount = pitcher?.achievements?.noHitters?.length || 0;
+        const perfectCount = pitcher?.achievements?.perfectGames?.length || 0;
+
+        const perfectText = perfectCount
+          ? `<div class="small"><strong>Perfect game watch:</strong> ${pitcher.achievements.perfectGames.map(g => escapeHtml(g.label)).join(" • ")}</div>`
+          : "";
+
+        const noNoText = noNoCount
+          ? `<div class="small" style="margin-top:8px;"><strong>No-hitter watch:</strong> ${pitcher.achievements.noHitters.map(g => escapeHtml(g.label)).join(" • ")}</div>`
+          : "";
+
+        card.innerHTML = `
+          <div class="team-top"></div>
+          <div class="team-inner">
+            <div class="team-head">
+              <div>
+                <div class="team-name">${escapeHtml(team.teamName)}</div>
+                <div class="owner-name">Managed by ${escapeHtml(team.owner || "Unknown GM")}</div>
+              </div>
+              <div class="badge">#${idx + 1}</div>
+            </div>
+
+            <div class="stat-grid">
+              <div class="stat">
+                <div class="stat-label">Team HR</div>
+                <div class="stat-value">${team.totalHr}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Hitters</div>
+                <div class="stat-value">${team.players.length}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Pitcher</div>
+                <div class="stat-value" style="font-size:18px;">${escapeHtml(pitcher?.fullName || team.pitcherName || "—")}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Dragon Status</div>
+                <div class="stat-value" style="font-size:18px;">${idx === 0 ? "Iron Throne" : idx < 3 ? "In the Hunt" : "Still Breathing"}</div>
+              </div>
+            </div>
+
+            <div class="section-title">Hitters</div>
+            ${hittersHtml || `<div class="small">No hitters loaded yet.</div>`}
+
+            <div class="section-title">Pitcher Quest</div>
+            <div class="pitcher-box">
+              <div style="font-size:18px;color:#fff7df;">${escapeHtml(pitcher?.fullName || team.pitcherName || "—")}</div>
+              <div class="small">${escapeHtml(pitcher?.team || "")}${pitcher?.note ? " • " + escapeHtml(pitcher.note) : ""}</div>
+              <div class="pitcher-badges">
+                <div class="mini-badge ${noNoCount ? "ok" : "warn"}">No-hitters: ${noNoCount}</div>
+                <div class="mini-badge ${perfectCount ? "ok" : "warn"}">Perfect games: ${perfectCount}</div>
+              </div>
+              ${perfectText}
+              ${noNoText}
+              ${!perfectCount && !noNoCount ? `<div class="small">No no-hitter or perfect game detected for 2026 yet.</div>` : ""}
+            </div>
+          </div>
+        `;
+
+        teamCards.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    async function loadLeague() {
+      if (!CONFIG.sheetCsvUrl || CONFIG.sheetCsvUrl.includes("PASTE_YOUR")) {
+        setStatus("error", "Add your published WebsiteData CSV link near the top of index.html.");
+        return;
+      }
+
+      setStatus("loading", "Summoning dragons, rosters, and dingers…");
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = "Refreshing...";
+
+      try {
+        const csvText = await fetch(CONFIG.sheetCsvUrl).then(r => {
+          if (!r.ok) throw new Error("Could not read the WebsiteData CSV.");
+          return r.text();
+        });
+
+        const rows = parseCsv(csvText);
+        const teamsRaw = rows
+          .map(rowToTeam)
+          .filter(team => team.teamName);
+
+        const teams = await Promise.all(teamsRaw.map(async team => {
+          const players = (await Promise.all(team.hitters.map(enrichHitter))).filter(Boolean);
+          const pitcher = team.pitcherName ? await enrichPitcher(team.pitcherName) : null;
+          const totalHr = players.reduce((sum, p) => sum + Number(p.hr || 0), 0);
+
+          return {
+            ...team,
+            players,
+            pitcher,
+            totalHr
+          };
+        }));
+
+        teams.sort((a, b) => {
+          if (b.totalHr !== a.totalHr) return b.totalHr - a.totalHr;
+          return a.teamName.localeCompare(b.teamName);
+        });
+
+        renderStandings(teams);
+        renderTeamCards(teams);
+
+        statTeams.textContent = teams.length;
+        statLeagueHr.textContent = teams.reduce((sum, t) => sum + t.totalHr, 0);
+        statHitters.textContent = teams.reduce((sum, t) => sum + t.players.length, 0);
+        statLeader.textContent = teams[0]?.teamName || "—";
+        lastUpdated.textContent = "Last refreshed " + new Date().toLocaleString();
+
+        setStatus("", "");
+      } catch (err) {
+        console.error(err);
+        setStatus("error", err.message || "Something went wrong loading your league.");
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "Refresh now";
+      }
+    }
+
+    refreshBtn.addEventListener("click", loadLeague);
+    loadLeague();
+    setInterval(loadLeague, CONFIG.refreshMs);
+  </script>
 </body>
 </html>
