@@ -428,396 +428,411 @@
     </div>
   </div>
 
-  <script>
-    const CONFIG = {
-      season: 2026,
-      refreshMs: 1000 * 60 * 10,
-      sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbtCDtQvXSn0d9uYubjC7_PWg-mBzZrmwwTPQ1vXlQT6vWz5HQrV3M6lfgqD_aYwFnHBxkITpINQOl/pub?gid=1875360398&single=true&output=csv"
-    };
+ <script>
+  const CONFIG = {
+    season: 2026,
+    refreshMs: 1000 * 60 * 10,
+    sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbtCDtQvXSn0d9uYubjC7_PWg-mBzZrmwwTPQ1vXlQT6vWz5HQrV3M6lfgqD_aYwFnHBxkITpINQOl/pub?gid=1875360398&single=true&output=csv"
+  };
 
-    const HITTER_COLUMNS = ["hitter1","hitter2","hitter3","hitter4","hitter5","hitter6","hitter7","hitter8"];
+  const HITTER_COLUMNS = ["hitter1","hitter2","hitter3","hitter4","hitter5","hitter6","hitter7","hitter8"];
 
-    const statusArea = document.getElementById("statusArea");
-    const standingsList = document.getElementById("standingsList");
-    const teamCards = document.getElementById("teamCards");
+  const statusArea = document.getElementById("statusArea");
+  const standingsList = document.getElementById("standingsList");
+  const teamCards = document.getElementById("teamCards");
 
-    const statTeams = document.getElementById("statTeams");
-    const statLeagueHr = document.getElementById("statLeagueHr");
-    const statHitters = document.getElementById("statHitters");
-    const statLeader = document.getElementById("statLeader");
-    const lastUpdated = document.getElementById("lastUpdated");
-    const refreshBtn = document.getElementById("refreshBtn");
+  const statTeams = document.getElementById("statTeams");
+  const statLeagueHr = document.getElementById("statLeagueHr");
+  const statHitters = document.getElementById("statHitters");
+  const statLeader = document.getElementById("statLeader");
+  const lastUpdated = document.getElementById("lastUpdated");
+  const refreshBtn = document.getElementById("refreshBtn");
 
-    function setStatus(type, text) {
-      statusArea.innerHTML = "";
-      if (!text) return;
-      const div = document.createElement("div");
-      div.className = type;
-      div.textContent = text;
-      statusArea.appendChild(div);
-    }
+  function setStatus(type, text) {
+    statusArea.innerHTML = "";
+    if (!text) return;
+    const div = document.createElement("div");
+    div.className = type;
+    div.textContent = text;
+    statusArea.appendChild(div);
+  }
 
-function normalizeName(name) {
-  return String(name || "")
-    .replace(/\uFEFF/g, "")
-    .replace(/^\ufeff/, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-    }
+  function normalizeName(name) {
+    return String(name || "")
+      .replace(/\uFEFF/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-    function parseCsv(text) {
-      const rows = [];
-      let row = [];
-      let value = "";
-      let inQuotes = false;
+  function decodeBadUtf8(str) {
+    if (!str) return "";
+    return str
+      .replace(/Ã¡/g, "á")
+      .replace(/Ã©/g, "é")
+      .replace(/Ã­/g, "í")
+      .replace(/Ã³/g, "ó")
+      .replace(/Ãº/g, "ú")
+      .replace(/Ã±/g, "ñ")
+      .replace(/Ã¼/g, "ü")
+      .replace(/Ã/g, "à");
+  }
 
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const next = text[i + 1];
+  function cleanPlayerName(name) {
+    return normalizeName(decodeBadUtf8(name));
+  }
 
-        if (char === '"') {
-          if (inQuotes && next === '"') {
-            value += '"';
-            i++;
-          } else {
-            inQuotes = !inQuotes;
-          }
-        } else if (char === "," && !inQuotes) {
-          row.push(value);
-          value = "";
-        } else if ((char === "\\n" || char === "\\r") && !inQuotes) {
-          if (char === "\\r" && next === "\\n") i++;
-          row.push(value);
-          rows.push(row);
-          row = [];
-          value = "";
+  function parseCsv(text) {
+    const rows = [];
+    let row = [];
+    let value = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const next = text[i + 1];
+
+      if (char === '"') {
+        if (inQuotes && next === '"') {
+          value += '"';
+          i++;
         } else {
-          value += char;
+          inQuotes = !inQuotes;
         }
-      }
-
-      if (value.length > 0 || row.length > 0) {
+      } else if (char === "," && !inQuotes) {
+        row.push(value);
+        value = "";
+      } else if ((char === "\n" || char === "\r") && !inQuotes) {
+        if (char === "\r" && next === "\n") i++;
         row.push(value);
         rows.push(row);
+        row = [];
+        value = "";
+      } else {
+        value += char;
       }
-
-      const headers = (rows.shift() || []).map(h => normalizeName(h));
-      return rows
-        .filter(r => r.some(cell => normalizeName(cell) !== ""))
-        .map(r => {
-          const obj = {};
-          headers.forEach((h, idx) => obj[h] = normalizeName(r[idx] || ""));
-          return obj;
-        });
     }
 
-    async function fetchJson(url) {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("Request failed: " + res.status);
-      return res.json();
+    if (value.length > 0 || row.length > 0) {
+      row.push(value);
+      rows.push(row);
     }
 
-    async function searchPlayer(name) {
-      const url = `https://statsapi.mlb.com/api/v1/people/search?names=${encodeURIComponent(name)}`;
-      const data = await fetchJson(url);
-      const people = data.people || [];
-      if (!people.length) return null;
+    const headers = (rows.shift() || []).map(h => normalizeName(h));
+    return rows
+      .filter(r => r.some(cell => normalizeName(cell) !== ""))
+      .map(r => {
+        const obj = {};
+        headers.forEach((h, idx) => obj[h] = normalizeName(r[idx] || ""));
+        return obj;
+      });
+  }
 
-      const exact = people.find(
-        p => normalizeName(p.fullName).toLowerCase() === normalizeName(name).toLowerCase()
-      );
+  async function fetchJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Request failed: " + res.status);
+    return res.json();
+  }
 
-      return exact || people[0];
-    }
+  async function searchPlayer(name) {
+    const url = `https://statsapi.mlb.com/api/v1/people/search?names=${encodeURIComponent(name)}`;
+    const data = await fetchJson(url);
+    const people = data.people || [];
+    if (!people.length) return null;
 
-    async function fetchPlayerSeasonStats(personId) {
-      const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=season&group=hitting,pitching&season=${CONFIG.season}`;
-      const data = await fetchJson(url);
-      const stats = data.stats || [];
-
-      const hitting =
-        stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "hitting")?.splits?.[0]?.stat || {};
-      const pitching =
-        stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "pitching")?.splits?.[0]?.stat || {};
-
-      return { hitting, pitching };
-    }
-
-    async function fetchPitcherAchievements(personId) {
-      const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=gameLog&group=pitching&season=${CONFIG.season}`;
-      const data = await fetchJson(url);
-      const games = data.stats?.[0]?.splits || [];
-
-      const notable = games.map(g => {
-        const stat = g.stat || {};
-        const hits = Number(stat.hits ?? 999);
-        const walks = Number(stat.baseOnBalls ?? 999);
-        const hbp = Number(stat.hitBatsmen ?? 999);
-        const ip = Number(String(stat.inningsPitched ?? "0").replace(/[^0-9.]/g, "")) || 0;
-        const battersFaced = Number(stat.battersFaced ?? 0);
-        const gs = Number(stat.gamesStarted ?? 0);
-        const label = `${g.date || ""}${g.opponent?.name ? " vs " + g.opponent.name : ""}`.trim();
-
-        const noHitter = gs >= 1 && ip >= 9 && hits === 0;
-        const perfectGame = noHitter && walks === 0 && hbp === 0 && battersFaced >= 27;
-
-        return { label, noHitter, perfectGame };
-      }).filter(g => g.noHitter || g.perfectGame);
-
-      return {
-        noHitters: notable.filter(g => g.noHitter),
-        perfectGames: notable.filter(g => g.perfectGame)
-      };
-    }
-
-    async function enrichHitter(name) {
-      if (!name) return null;
-
-      const person = await searchPlayer(name);
-      if (!person) {
-        return {
-          lookupName: name,
-          fullName: name,
-          hr: 0,
-          team: "",
-          note: "No MLB match found"
-        };
-      }
-
-      const season = await fetchPlayerSeasonStats(person.id);
-
-      return {
-        lookupName: name,
-        fullName: person.fullName,
-        hr: Number(season.hitting.homeRuns || 0),
-        team: person.currentTeam?.name || "",
-        note: normalizeName(person.fullName).toLowerCase() === normalizeName(name).toLowerCase()
-          ? ""
-          : `Matched from "${name}"`
-      };
-    }
-
-    async function enrichPitcher(name) {
-      if (!name) return null;
-
-      const person = await searchPlayer(name);
-      if (!person) {
-        return {
-          fullName: name,
-          team: "",
-          achievements: { noHitters: [], perfectGames: [] },
-          note: "No MLB match found"
-        };
-      }
-
-      const achievements = await fetchPitcherAchievements(person.id);
-
-      return {
-        fullName: person.fullName,
-        team: person.currentTeam?.name || "",
-        achievements,
-        note: normalizeName(person.fullName).toLowerCase() === normalizeName(name).toLowerCase()
-          ? ""
-          : `Matched from "${name}"`
-      };
-    }
-
-    function rowToTeam(row) {
-  const get = (obj, key) => {
-    const actualKey = Object.keys(obj).find(
-      k => normalizeName(k).toLowerCase() === key.toLowerCase()
+    const exact = people.find(
+      p => normalizeName(p.fullName).toLowerCase() === normalizeName(name).toLowerCase()
     );
-    return actualKey ? normalizeName(obj[actualKey]) : "";
-  };
 
-  const hitters = HITTER_COLUMNS.map(col => get(row, col)).filter(Boolean);
+    return exact || people[0];
+  }
 
-  return {
-    teamName: get(row, "teamName"),
-    owner: get(row, "owner"),
-    pitcherName: get(row, "pitcher"),
-    hitters
-  };
-}
+  async function fetchPlayerSeasonStats(personId) {
+    const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=season&group=hitting,pitching&season=${CONFIG.season}`;
+    const data = await fetchJson(url);
+    const stats = data.stats || [];
 
-    function renderStandings(teams) {
-      standingsList.innerHTML = "";
-      teams.forEach((team, idx) => {
-        const row = document.createElement("div");
-        row.className = "standing-row";
-        row.innerHTML = `
-          <div class="standing-main">
-            <div class="rank">${idx + 1}</div>
+    const hitting =
+      stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "hitting")?.splits?.[0]?.stat || {};
+    const pitching =
+      stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "pitching")?.splits?.[0]?.stat || {};
+
+    return { hitting, pitching };
+  }
+
+  async function fetchPitcherAchievements(personId) {
+    const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=gameLog&group=pitching&season=${CONFIG.season}`;
+    const data = await fetchJson(url);
+    const games = data.stats?.[0]?.splits || [];
+
+    const notable = games.map(g => {
+      const stat = g.stat || {};
+      const hits = Number(stat.hits ?? 999);
+      const walks = Number(stat.baseOnBalls ?? 999);
+      const hbp = Number(stat.hitBatsmen ?? 999);
+      const ip = Number(String(stat.inningsPitched ?? "0").replace(/[^0-9.]/g, "")) || 0;
+      const battersFaced = Number(stat.battersFaced ?? 0);
+      const gs = Number(stat.gamesStarted ?? 0);
+      const label = `${g.date || ""}${g.opponent?.name ? " vs " + g.opponent.name : ""}`.trim();
+
+      const noHitter = gs >= 1 && ip >= 9 && hits === 0;
+      const perfectGame = noHitter && walks === 0 && hbp === 0 && battersFaced >= 27;
+
+      return { label, noHitter, perfectGame };
+    }).filter(g => g.noHitter || g.perfectGame);
+
+    return {
+      noHitters: notable.filter(g => g.noHitter),
+      perfectGames: notable.filter(g => g.perfectGame)
+    };
+  }
+
+  async function enrichHitter(name) {
+    if (!name) return null;
+
+    const cleaned = cleanPlayerName(name);
+    const person = await searchPlayer(cleaned);
+
+    if (!person) {
+      return {
+        lookupName: cleaned,
+        fullName: cleaned,
+        hr: 0,
+        team: "",
+        note: "No MLB match found"
+      };
+    }
+
+    const season = await fetchPlayerSeasonStats(person.id);
+
+    return {
+      lookupName: cleaned,
+      fullName: person.fullName,
+      hr: Number(season.hitting.homeRuns || 0),
+      team: person.currentTeam?.name || "",
+      note: normalizeName(person.fullName).toLowerCase() === normalizeName(cleaned).toLowerCase()
+        ? ""
+        : `Matched from "${cleaned}"`
+    };
+  }
+
+  async function enrichPitcher(name) {
+    if (!name) return null;
+
+    const cleaned = cleanPlayerName(name);
+    const person = await searchPlayer(cleaned);
+
+    if (!person) {
+      return {
+        fullName: cleaned,
+        team: "",
+        achievements: { noHitters: [], perfectGames: [] },
+        note: "No MLB match found"
+      };
+    }
+
+    const achievements = await fetchPitcherAchievements(person.id);
+
+    return {
+      fullName: person.fullName,
+      team: person.currentTeam?.name || "",
+      achievements,
+      note: normalizeName(person.fullName).toLowerCase() === normalizeName(cleaned).toLowerCase()
+        ? ""
+        : `Matched from "${cleaned}"`
+    };
+  }
+
+  function rowToTeam(row) {
+    const get = (obj, key) => {
+      const actualKey = Object.keys(obj).find(
+        k => normalizeName(k).toLowerCase() === key.toLowerCase()
+      );
+      return actualKey ? normalizeName(obj[actualKey]) : "";
+    };
+
+    const hitters = HITTER_COLUMNS.map(col => get(row, col)).filter(Boolean);
+
+    return {
+      teamName: get(row, "teamName"),
+      owner: get(row, "owner"),
+      pitcherName: get(row, "pitcher"),
+      hitters
+    };
+  }
+
+  function renderStandings(teams) {
+    standingsList.innerHTML = "";
+    teams.forEach((team, idx) => {
+      const row = document.createElement("div");
+      row.className = "standing-row";
+      row.innerHTML = `
+        <div class="standing-main">
+          <div class="rank">${idx + 1}</div>
+          <div>
+            <div class="team-name">${escapeHtml(team.teamName)}</div>
+            <div class="owner-name">Managed by ${escapeHtml(team.owner || "Unknown GM")}</div>
+          </div>
+        </div>
+        <div class="hr-box">
+          <div class="hr-label">Team HR</div>
+          <div class="hr-value">${team.totalHr}</div>
+        </div>
+      `;
+      standingsList.appendChild(row);
+    });
+  }
+
+  function renderTeamCards(teams) {
+    teamCards.innerHTML = "";
+    teams.forEach((team, idx) => {
+      const card = document.createElement("div");
+      card.className = "team-card";
+
+      const hittersHtml = team.players
+        .sort((a, b) => b.hr - a.hr)
+        .map(player => `
+          <div class="player-row">
+            <div>
+              <div style="font-size:18px;color:#fff7df;">${escapeHtml(player.fullName)}</div>
+              <div class="small">${escapeHtml(player.team || "Team TBD")}${player.note ? " • " + escapeHtml(player.note) : ""}</div>
+            </div>
+            <div class="hr-box">
+              <div class="hr-label">2026 HR</div>
+              <div class="hr-value">${player.hr}</div>
+            </div>
+          </div>
+        `).join("");
+
+      const pitcher = team.pitcher;
+      const noNoCount = pitcher?.achievements?.noHitters?.length || 0;
+      const perfectCount = pitcher?.achievements?.perfectGames?.length || 0;
+
+      const perfectText = perfectCount
+        ? `<div class="small"><strong>Perfect game watch:</strong> ${pitcher.achievements.perfectGames.map(g => escapeHtml(g.label)).join(" • ")}</div>`
+        : "";
+
+      const noNoText = noNoCount
+        ? `<div class="small" style="margin-top:8px;"><strong>No-hitter watch:</strong> ${pitcher.achievements.noHitters.map(g => escapeHtml(g.label)).join(" • ")}</div>`
+        : "";
+
+      card.innerHTML = `
+        <div class="team-top"></div>
+        <div class="team-inner">
+          <div class="team-head">
             <div>
               <div class="team-name">${escapeHtml(team.teamName)}</div>
               <div class="owner-name">Managed by ${escapeHtml(team.owner || "Unknown GM")}</div>
             </div>
+            <div class="badge">#${idx + 1}</div>
           </div>
-          <div class="hr-box">
-            <div class="hr-label">Team HR</div>
-            <div class="hr-value">${team.totalHr}</div>
+
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat-label">Team HR</div>
+              <div class="stat-value">${team.totalHr}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Hitters</div>
+              <div class="stat-value">${team.players.length}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Pitcher</div>
+              <div class="stat-value" style="font-size:18px;">${escapeHtml(pitcher?.fullName || team.pitcherName || "—")}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Dragon Status</div>
+              <div class="stat-value" style="font-size:18px;">${idx === 0 ? "Iron Throne" : idx < 3 ? "In the Hunt" : "Still Breathing"}</div>
+            </div>
           </div>
-        `;
-        standingsList.appendChild(row);
+
+          <div class="section-title">Hitters</div>
+          ${hittersHtml || `<div class="small">No hitters loaded yet.</div>`}
+
+          <div class="section-title">Pitcher Quest</div>
+          <div class="pitcher-box">
+            <div style="font-size:18px;color:#fff7df;">${escapeHtml(pitcher?.fullName || team.pitcherName || "—")}</div>
+            <div class="small">${escapeHtml(pitcher?.team || "")}${pitcher?.note ? " • " + escapeHtml(pitcher.note) : ""}</div>
+            <div class="pitcher-badges">
+              <div class="mini-badge ${noNoCount ? "ok" : "warn"}">No-hitters: ${noNoCount}</div>
+              <div class="mini-badge ${perfectCount ? "ok" : "warn"}">Perfect games: ${perfectCount}</div>
+            </div>
+            ${perfectText}
+            ${noNoText}
+            ${!perfectCount && !noNoCount ? `<div class="small">No no-hitter or perfect game detected for 2026 yet.</div>` : ""}
+          </div>
+        </div>
+      `;
+
+      teamCards.appendChild(card);
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  async function loadLeague() {
+    if (!CONFIG.sheetCsvUrl) {
+      setStatus("error", "No WebsiteData CSV link found.");
+      return;
+    }
+
+    setStatus("loading", "Summoning dragons, rosters, and dingers…");
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = "Refreshing...";
+
+    try {
+      const csvText = await fetch(CONFIG.sheetCsvUrl).then(r => {
+        if (!r.ok) throw new Error("Could not read the WebsiteData CSV.");
+        return r.text();
       });
-    }
 
-    function renderTeamCards(teams) {
-      teamCards.innerHTML = "";
-      teams.forEach((team, idx) => {
-        const card = document.createElement("div");
-        card.className = "team-card";
+      const rows = parseCsv(csvText);
+      const teamsRaw = rows.map(rowToTeam).filter(team => team.teamName);
 
-        const hittersHtml = team.players
-          .sort((a, b) => b.hr - a.hr)
-          .map(player => `
-            <div class="player-row">
-              <div>
-                <div style="font-size:18px;color:#fff7df;">${escapeHtml(player.fullName)}</div>
-                <div class="small">${escapeHtml(player.team || "Team TBD")}${player.note ? " • " + escapeHtml(player.note) : ""}</div>
-              </div>
-              <div class="hr-box">
-                <div class="hr-label">2026 HR</div>
-                <div class="hr-value">${player.hr}</div>
-              </div>
-            </div>
-          `).join("");
+      const teams = await Promise.all(teamsRaw.map(async team => {
+        const players = (await Promise.all(team.hitters.map(enrichHitter))).filter(Boolean);
+        const pitcher = team.pitcherName ? await enrichPitcher(team.pitcherName) : null;
+        const totalHr = players.reduce((sum, p) => sum + Number(p.hr || 0), 0);
 
-        const pitcher = team.pitcher;
-        const noNoCount = pitcher?.achievements?.noHitters?.length || 0;
-        const perfectCount = pitcher?.achievements?.perfectGames?.length || 0;
+        return {
+          ...team,
+          players,
+          pitcher,
+          totalHr
+        };
+      }));
 
-        const perfectText = perfectCount
-          ? `<div class="small"><strong>Perfect game watch:</strong> ${pitcher.achievements.perfectGames.map(g => escapeHtml(g.label)).join(" • ")}</div>`
-          : "";
-
-        const noNoText = noNoCount
-          ? `<div class="small" style="margin-top:8px;"><strong>No-hitter watch:</strong> ${pitcher.achievements.noHitters.map(g => escapeHtml(g.label)).join(" • ")}</div>`
-          : "";
-
-        card.innerHTML = `
-          <div class="team-top"></div>
-          <div class="team-inner">
-            <div class="team-head">
-              <div>
-                <div class="team-name">${escapeHtml(team.teamName)}</div>
-                <div class="owner-name">Managed by ${escapeHtml(team.owner || "Unknown GM")}</div>
-              </div>
-              <div class="badge">#${idx + 1}</div>
-            </div>
-
-            <div class="stat-grid">
-              <div class="stat">
-                <div class="stat-label">Team HR</div>
-                <div class="stat-value">${team.totalHr}</div>
-              </div>
-              <div class="stat">
-                <div class="stat-label">Hitters</div>
-                <div class="stat-value">${team.players.length}</div>
-              </div>
-              <div class="stat">
-                <div class="stat-label">Pitcher</div>
-                <div class="stat-value" style="font-size:18px;">${escapeHtml(pitcher?.fullName || team.pitcherName || "—")}</div>
-              </div>
-              <div class="stat">
-                <div class="stat-label">Dragon Status</div>
-                <div class="stat-value" style="font-size:18px;">${idx === 0 ? "Iron Throne" : idx < 3 ? "In the Hunt" : "Still Breathing"}</div>
-              </div>
-            </div>
-
-            <div class="section-title">Hitters</div>
-            ${hittersHtml || `<div class="small">No hitters loaded yet.</div>`}
-
-            <div class="section-title">Pitcher Quest</div>
-            <div class="pitcher-box">
-              <div style="font-size:18px;color:#fff7df;">${escapeHtml(pitcher?.fullName || team.pitcherName || "—")}</div>
-              <div class="small">${escapeHtml(pitcher?.team || "")}${pitcher?.note ? " • " + escapeHtml(pitcher.note) : ""}</div>
-              <div class="pitcher-badges">
-                <div class="mini-badge ${noNoCount ? "ok" : "warn"}">No-hitters: ${noNoCount}</div>
-                <div class="mini-badge ${perfectCount ? "ok" : "warn"}">Perfect games: ${perfectCount}</div>
-              </div>
-              ${perfectText}
-              ${noNoText}
-              ${!perfectCount && !noNoCount ? `<div class="small">No no-hitter or perfect game detected for 2026 yet.</div>` : ""}
-            </div>
-          </div>
-        `;
-
-        teamCards.appendChild(card);
+      teams.sort((a, b) => {
+        if (b.totalHr !== a.totalHr) return b.totalHr - a.totalHr;
+        return a.teamName.localeCompare(b.teamName);
       });
+
+      renderStandings(teams);
+      renderTeamCards(teams);
+
+      statTeams.textContent = teams.length;
+      statLeagueHr.textContent = teams.reduce((sum, t) => sum + t.totalHr, 0);
+      statHitters.textContent = teams.reduce((sum, t) => sum + t.players.length, 0);
+      statLeader.textContent = teams[0]?.teamName || "—";
+      lastUpdated.textContent = "Last refreshed " + new Date().toLocaleString();
+
+      setStatus("", "");
+    } catch (err) {
+      console.error(err);
+      setStatus("error", err.message || "Something went wrong loading your league.");
+    } finally {
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = "Refresh now";
     }
+  }
 
-    function escapeHtml(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
-    async function loadLeague() {
-      if (!CONFIG.sheetCsvUrl || CONFIG.sheetCsvUrl.includes("PASTE_YOUR")) {
-        setStatus("error", "Add your published WebsiteData CSV link near the top of index.html.");
-        return;
-      }
-
-      setStatus("loading", "Summoning dragons, rosters, and dingers…");
-      refreshBtn.disabled = true;
-      refreshBtn.textContent = "Refreshing...";
-
-      try {
-        const csvText = await fetch(CONFIG.sheetCsvUrl).then(r => {
-          if (!r.ok) throw new Error("Could not read the WebsiteData CSV.");
-          return r.text();
-        });
-
-        const rows = parseCsv(csvText);
-        const teamsRaw = rows
-          .map(rowToTeam)
-          .filter(team => team.teamName);
-
-        const teams = await Promise.all(teamsRaw.map(async team => {
-          const players = (await Promise.all(team.hitters.map(enrichHitter))).filter(Boolean);
-          const pitcher = team.pitcherName ? await enrichPitcher(team.pitcherName) : null;
-          const totalHr = players.reduce((sum, p) => sum + Number(p.hr || 0), 0);
-
-          return {
-            ...team,
-            players,
-            pitcher,
-            totalHr
-          };
-        }));
-
-        teams.sort((a, b) => {
-          if (b.totalHr !== a.totalHr) return b.totalHr - a.totalHr;
-          return a.teamName.localeCompare(b.teamName);
-        });
-
-        renderStandings(teams);
-        renderTeamCards(teams);
-
-        statTeams.textContent = teams.length;
-        statLeagueHr.textContent = teams.reduce((sum, t) => sum + t.totalHr, 0);
-        statHitters.textContent = teams.reduce((sum, t) => sum + t.players.length, 0);
-        statLeader.textContent = teams[0]?.teamName || "—";
-        lastUpdated.textContent = "Last refreshed " + new Date().toLocaleString();
-
-        setStatus("", "");
-      } catch (err) {
-        console.error(err);
-        setStatus("error", err.message || "Something went wrong loading your league.");
-      } finally {
-        refreshBtn.disabled = false;
-        refreshBtn.textContent = "Refresh now";
-      }
-    }
-
-    refreshBtn.addEventListener("click", loadLeague);
-    loadLeague();
-    setInterval(loadLeague, CONFIG.refreshMs);
-  </script>
-</body>
-</html>
+  refreshBtn.addEventListener("click", loadLeague);
+  loadLeague();
+  setInterval(loadLeague, CONFIG.refreshMs);
+</script>
