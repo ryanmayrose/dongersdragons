@@ -417,11 +417,21 @@
       }
     }
 
-    .team-card {
+    details.team-card {
       background: linear-gradient(180deg, var(--panel-2), var(--panel));
       border: 1px solid rgba(242, 201, 76, 0.42);
       border-radius: 22px;
       overflow: hidden;
+    }
+
+    details.team-card summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    details.team-card summary::-webkit-details-marker {
+      display: none;
     }
 
     .team-top {
@@ -429,8 +439,8 @@
       background: linear-gradient(90deg, #f2c94c, #a73434, #f2c94c);
     }
 
-    .team-inner {
-      padding: 16px;
+    .team-summary {
+      padding: 14px 16px;
     }
 
     .team-head {
@@ -438,11 +448,11 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .team-name {
-      font-size: 24px;
+      font-size: 22px;
       color: #fff4d8;
       line-height: 1.05;
     }
@@ -465,12 +475,17 @@
 
     .mini-stat-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 900px) {
+      .mini-stat-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
       .mini-stat-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -492,10 +507,22 @@
 
     .mini-stat-value {
       margin-top: 5px;
-      font-size: 20px;
+      font-size: 18px;
       color: var(--gold);
       font-weight: bold;
       line-height: 1.1;
+    }
+
+    .expand-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .team-details {
+      border-top: 1px solid var(--line);
+      padding: 14px 16px 16px;
+      background: rgba(255, 255, 255, 0.02);
     }
 
     .section-title {
@@ -506,21 +533,26 @@
       margin: 14px 0 8px;
     }
 
+    .player-list {
+      display: grid;
+      gap: 8px;
+    }
+
     .player-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: grid;
+      grid-template-columns: 1fr auto;
       gap: 12px;
+      align-items: center;
       border: 1px solid var(--line);
       background: rgba(255, 255, 255, 0.03);
       border-radius: 14px;
       padding: 10px 12px;
-      margin-bottom: 8px;
     }
 
     .player-name {
-      font-size: 17px;
+      font-size: 16px;
       color: #fff7df;
+      line-height: 1.2;
     }
 
     .small {
@@ -797,9 +829,7 @@
 
     async function fetchJson(url) {
       const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error("Request failed: " + res.status);
-      }
+      if (!res.ok) throw new Error("Request failed: " + res.status);
       return res.json();
     }
 
@@ -826,10 +856,16 @@
       ]);
 
       const stats = seasonData.stats || [];
-      const hitting =
-        stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "hitting")?.splits?.[0]?.stat || {};
-      const pitching =
-        stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "pitching")?.splits?.[0]?.stat || {};
+
+      const hittingSplit =
+        stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "hitting")?.splits?.[0] || null;
+
+      const pitchingSplit =
+        stats.find(s => s.group && s.group.displayName && s.group.displayName.toLowerCase() === "pitching")?.splits?.[0] || null;
+
+      const hitting = hittingSplit?.stat || {};
+      const pitching = pitchingSplit?.stat || {};
+      const mlbTeam = hittingSplit?.team?.name || pitchingSplit?.team?.name || "";
 
       const gameLogs = logData.stats?.[0]?.splits || [];
       const sevenDaysAgo = new Date();
@@ -841,7 +877,7 @@
         return sum + Number(g.stat?.homeRuns || 0);
       }, 0);
 
-      return { hitting, pitching, weeklyHr };
+      return { hitting, pitching, weeklyHr, mlbTeam };
     }
 
     async function fetchPitcherAchievements(personId) {
@@ -895,7 +931,7 @@
         fullName: person.fullName,
         hr: Number(season.hitting.homeRuns || 0),
         weeklyHr: Number(season.weeklyHr || 0),
-        team: person.currentTeam?.name || "",
+        team: person.currentTeam?.name || season.mlbTeam || "",
         note:
           normalizeName(person.fullName).toLowerCase() === normalizeName(cleaned).toLowerCase()
             ? ""
@@ -918,11 +954,12 @@
         };
       }
 
+      const season = await fetchPlayerSeasonStats(person.id);
       const achievements = await fetchPitcherAchievements(person.id);
 
       return {
         fullName: person.fullName,
-        team: person.currentTeam?.name || "",
+        team: person.currentTeam?.name || season.mlbTeam || "",
         achievements,
         note:
           normalizeName(person.fullName).toLowerCase() === normalizeName(cleaned).toLowerCase()
@@ -1024,8 +1061,9 @@
       teamCards.innerHTML = "";
 
       teams.forEach((team, idx) => {
-        const card = document.createElement("div");
+        const card = document.createElement("details");
         card.className = "team-card";
+        if (idx === 0) card.open = true;
 
         const hittersHtml = team.players
           .slice()
@@ -1056,40 +1094,52 @@
           : "";
 
         card.innerHTML = `
-          <div class="team-top"></div>
-          <div class="team-inner">
-            <div class="team-head">
-              <div>
-                <div class="team-name">${escapeHtml(team.teamName)}</div>
-                <div class="owner-name">Managed by ${escapeHtml(team.owner || "Unknown GM")}</div>
+          <summary>
+            <div class="team-top"></div>
+            <div class="team-summary">
+              <div class="team-head">
+                <div>
+                  <div class="team-name">${escapeHtml(team.teamName)}</div>
+                  <div class="owner-name">Managed by ${escapeHtml(team.owner || "Unknown GM")}</div>
+                </div>
+                <div class="badge">#${idx + 1}</div>
               </div>
-              <div class="badge">#${idx + 1}</div>
-            </div>
 
-            <div class="mini-stat-grid">
-              <div class="mini-stat">
-                <div class="mini-stat-label">Team HR</div>
-                <div class="mini-stat-value">${team.totalHr}</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-stat-label">This Week</div>
-                <div class="mini-stat-value">
-                  ${team.weeklyHr > 0 ? "▲" : team.weeklyHr < 0 ? "▼" : "•"}
-                  ${team.weeklyHr > 0 ? "+" : ""}${team.weeklyHr}
+              <div class="mini-stat-grid">
+                <div class="mini-stat">
+                  <div class="mini-stat-label">Team HR</div>
+                  <div class="mini-stat-value">${team.totalHr}</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="mini-stat-label">This Week</div>
+                  <div class="mini-stat-value">
+                    ${team.weeklyHr > 0 ? "▲" : team.weeklyHr < 0 ? "▼" : "•"}
+                    ${team.weeklyHr > 0 ? "+" : ""}${team.weeklyHr}
+                  </div>
+                </div>
+                <div class="mini-stat">
+                  <div class="mini-stat-label">Hitters</div>
+                  <div class="mini-stat-value">${team.players.length}</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="mini-stat-label">Pitcher</div>
+                  <div class="mini-stat-value" style="font-size:14px;">${escapeHtml(pitcher?.fullName || team.pitcherName || "—")}</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="mini-stat-label">Dragon Status</div>
+                  <div class="mini-stat-value" style="font-size:14px;">${idx === 0 ? "Iron Throne" : idx < 3 ? "In the Hunt" : "Still Breathing"}</div>
                 </div>
               </div>
-              <div class="mini-stat">
-                <div class="mini-stat-label">Hitters</div>
-                <div class="mini-stat-value">${team.players.length}</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-stat-label">Dragon Status</div>
-                <div class="mini-stat-value" style="font-size:16px;">${idx === 0 ? "Iron Throne" : idx < 3 ? "In the Hunt" : "Still Breathing"}</div>
-              </div>
-            </div>
 
+              <div class="expand-hint">Click to ${idx === 0 ? "collapse" : "expand"} roster details</div>
+            </div>
+          </summary>
+
+          <div class="team-details">
             <div class="section-title">Hitters</div>
-            ${hittersHtml || '<div class="small">No hitters loaded yet.</div>'}
+            <div class="player-list">
+              ${hittersHtml || '<div class="small">No hitters loaded yet.</div>'}
+            </div>
 
             <div class="section-title">Pitcher Quest</div>
             <div class="pitcher-box">
