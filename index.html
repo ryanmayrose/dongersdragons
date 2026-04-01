@@ -780,10 +780,9 @@
 
     const HITTER_COLUMNS = ["hitter1", "hitter2", "hitter3", "hitter4", "hitter5", "hitter6", "hitter7", "hitter8"];
     
-    const PLAYER_OVERRIDES = {
+const PLAYER_OVERRIDES = {
   "Max Muncy": {
-    fullName: "Max Muncy",
-    teamName: "Athletics"
+    personId: 691777
   }
 };
 
@@ -901,26 +900,17 @@
   const cleanedName = normalizeName(name);
   const override = PLAYER_OVERRIDES[cleanedName];
 
+  if (override && override.personId) {
+    const url = `https://statsapi.mlb.com/api/v1/people/${override.personId}`;
+    const data = await fetchJson(url);
+    const people = data.people || [];
+    if (people.length) return people[0];
+  }
+
   const url = `https://statsapi.mlb.com/api/v1/people/search?names=${encodeURIComponent(cleanedName)}`;
   const data = await fetchJson(url);
   const people = data.people || [];
   if (!people.length) return null;
-
-  if (override) {
-    const exactTeamMatch = people.find(p => {
-      const playerTeam =
-        normalizeName(p.currentTeam?.name || "").toLowerCase();
-      const wantedTeam =
-        normalizeName(override.teamName || "").toLowerCase();
-
-      return (
-        normalizeName(p.fullName).toLowerCase() === normalizeName(override.fullName).toLowerCase() &&
-        playerTeam === wantedTeam
-      );
-    });
-
-    if (exactTeamMatch) return exactTeamMatch;
-  }
 
   const exact = people.find(
     p => normalizeName(p.fullName).toLowerCase() === cleanedName.toLowerCase()
@@ -928,7 +918,6 @@
 
   return exact || people[0];
 }
-
     async function fetchPlayerSeasonStats(personId) {
       const seasonUrl = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=season&group=hitting,pitching&season=${CONFIG.season}`;
       const logUrl = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=gameLog&group=hitting&season=${CONFIG.season}`;
